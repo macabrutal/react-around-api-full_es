@@ -1,13 +1,15 @@
+// AGREGAR getUserProfile
+
 const router = require('express').Router();
 
 const {
-  getUser, getUserById, createUser, updateProfile, updateAvatar,
+  getUser, getUserById, updateProfile, updateAvatar, getUserProfile,
 } = require('../controllers/users');
 
 // definir rutas
 router.get('/', getUser);
 router.get('/:id', getUserById);
-router.post('/', createUser);
+router.get('/me', getUserProfile);
 router.patch('/me', updateProfile);
 router.patch('/me/avatar', updateAvatar);
 

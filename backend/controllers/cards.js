@@ -1,16 +1,16 @@
 const Card = require('../models/card');
 
+const NotFoundError = require('./errors/notFoundError');
+const AuthError = require('./errors/AuthError');
+
 module.exports.getCards = (req, res) => {
   Card.find({})
     .orFail()
     .then((cards) => res.send({ data: cards }))
-    .catch((error) => {
-      if (error.status === 404) {
-        return res.status(404).send({ message: 'Cards no encontrada' });
-      }
-      return res.status(500).send({ message: 'Error del servidor' });
-    });
+    .catch(next);
 };
+
+// Proyecto 16: Comprobar los derechos de los usuarios con req.user._id
 
 module.exports.createCards = (req, res) => {
   const { name, link } = req.body;
@@ -19,11 +19,11 @@ module.exports.createCards = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((error) => {
       if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para crear una tarjeta' });
+        throw new AuthError('Datos inválidos para crear una Card');
       } if (error.status === 404) {
-        return res.status(404).send({ message: 'Cards no encontrada' });
+        throw new NotFoundError('Card no encontrada');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+      throw new ServerError('Error del servidor');
     });
 };
 
@@ -33,11 +33,11 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => res.send({ data: card }))
     .catch((error) => {
       if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para eliminar una tarjeta' });
+        throw new AuthError('Datos inválidos para eliminar una Card');
       } if (error.status === 404) {
-        return res.status(404).send({ message: 'Cards no encontrada' });
+        throw new NotFoundError('Card no encontrada');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+      throw new ServerError('Error del servidor');
     });
 };
 

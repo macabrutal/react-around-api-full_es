@@ -41,6 +41,23 @@ function App() {
   const [stateInfoToolTip, setStateInfoToolTip] = React.useState(false);
   const history = useHistory();
 
+  //proyecto 16
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    function tokenCheck() {
+      setToken(localStorage.getItem('token'));
+      if (token) {
+        auth.getContent(token).then((res) => {
+          setIsLoggedIn(true);
+          setEmail(res.user.email);
+        });
+      }
+    }
+    tokenCheck();
+  }, [token, email, isLoggedIn]);
+
+
   React.useEffect(() => {
     api
       .getInitialCards()
@@ -204,8 +221,9 @@ function App() {
     setEmail('');
     setIsLoggedIn(false);
     setCurrentUser({});
-    localStorage.removeItem('jwt');
+    setToken(localStorage.removeItem("token"));
   }
+
 
   //HAMDLE PARA InfoTooltip (EXITO & ERROR)
   function handleStateInfo(infoStatus) {
