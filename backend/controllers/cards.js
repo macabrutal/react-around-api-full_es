@@ -1,78 +1,104 @@
 const Card = require('../models/card');
 
-const NotFoundError = require('./errors/notFoundError');
-const AuthError = require('./errors/AuthError');
+const NotFoundError = require('../errors/NotFoundError');
+const AuthError = require('../errors/AuthError');
+const BadRequest = require('../errors/BadRequest');
+const ServerError = require('../errors/ServerError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Card no encontrada');
+    })
     .then((cards) => res.send({ data: cards }))
     .catch(next);
 };
 
 // Proyecto 16: Comprobar los derechos de los usuarios con req.user._id
 
-module.exports.createCards = (req, res) => {
+module.exports.createCards = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        throw new AuthError('Datos inválidos para crear una Card');
-      } if (error.status === 404) {
-        throw new NotFoundError('Card no encontrada');
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      throw new ServerError('Error del servidor');
+
+      next(err);
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.id)
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Card no encontrada');
+    })
     .then((card) => res.send({ data: card }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        throw new AuthError('Datos inválidos para eliminar una Card');
-      } if (error.status === 404) {
-        throw new NotFoundError('Card no encontrada');
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      throw new ServerError('Error del servidor');
+
+      next(err);
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Card no encontrada');
+    })
     .then((card) => res.send({ data: card }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para modificar una tarjeta' });
-      } if (error.status === 404) {
-        return res.status(404).send({ message: 'Cards no encontrada' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Card no encontrada');
+    })
     .then((card) => res.send({ data: card }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para modificar una tarjeta' });
-      } if (error.status === 404) {
-        return res.status(404).send({ message: 'Cards no encontrada' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };

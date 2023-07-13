@@ -1,5 +1,3 @@
-// El email de cada usuario debe ser único y validarse con el esquema de correo electrónico (validator)
-
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 const bcrypt = require('bcryptjs');

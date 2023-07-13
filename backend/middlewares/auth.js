@@ -1,7 +1,3 @@
-// verificar el token de los encabezados.
-// Si todo está bien con el token, el middleware debería añadir el payload del token al objeto user y llamar a next()
-// Si algo está mal con el token, el middleware debería devolver un error 401.
-
 const jwt = require('jsonwebtoken');
 
 const handleAuthError = (res) => {

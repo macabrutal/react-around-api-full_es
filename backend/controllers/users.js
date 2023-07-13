@@ -1,56 +1,77 @@
-// 1.el controlador createUser debe añadir los campos email y password
-// 2.Asegúrate de que se haya calculado el hash de las contraseñas antes de guardarlas en la base de datos
-// 3.que los campos name, about y avatar sean opcionales (no hay un método required())
-
-// 4.Para los valores predeterminados, añade
-// name — "Jacques Cousteau";
-// about — "Explorador";
-// avatar — enlace;
-
-const bcrypt = require('bcryptjs'); 		// importando bcrypt
-const jwt = require('jsonwebtoken');		// importando  jsonwebtoken
+const bcrypt = require('bcryptjs'); // importando bcrypt
+const jwt = require('jsonwebtoken'); // importando  jsonwebtoken
 const User = require('../models/user');
 
 const { NODE_ENV, JWT_SECRET } = process.env; // guardar las claves
 
-module.exports.getUser = (req, res) => {
+// errors
+const BadRequest = require('../errors/BadRequest');
+const NotFoundError = require('../errors/NotFoundError');
+const AuthError = require('../errors/AuthError');
+const ServerError = require('../errors/ServerError');
+
+module.exports.getUser = (req, res, next) => {
   User.find({})
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Usuario no encontrado');
+    })
     .then((users) => res.send({ data: users }))
     .catch((error) => {
-      if (error.status === 404) {
-        return res.status(404).send({ message: 'Usuario no encontrado' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Usuario no encontrado');
+    })
     .then((user) => res.send({ data: user }))
     .catch((error) => {
-      if (error.status === 404) {
-        return res.status(404).send({ message: 'Usuario no encontrado' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
 //
-module.exports.getUserProfile = (req, res) => {
+module.exports.getUserProfile = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Usuario no encontrado');
+    })
     .then((user) => res.send({ data: user }))
     .catch((error) => {
-      if (error.status === 404) {
-        return res.status(404).send({ message: 'Usuario no encontrado' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -58,20 +79,24 @@ module.exports.createUser = (req, res) => {
   // 1.cálculo de hashes de la contraseña; acepta 2 parámetros: contraseña y 1 número ("salt").
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
-      name, about, avatar, email, password: hash, 		// 3.añadir el hash a la base de datos
+      name, about, avatar, email, password: hash, // 3.añadir el hash a la base de datos
     }))
     .then((user) => res.send({ data: user }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para crear un usuario/tarjeta o actualizar el avatar/perfil de un usuario' });
-      } if (error.status === 404) {
-        return res.status(404).send({ message: 'No se encontraron usuarios' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -84,39 +109,60 @@ module.exports.login = (req, res) => {
         ),
       });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
+    .catch((error) => {
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
+      }
+
+      next(err);
     });
 };
 
-module.exports.updateProfile = (req, res) => {
+module.exports.updateProfile = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Usuario no encontrado');
+    })
     .then((user) => res.send(req.params.id, { data: user }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para crear un usuario/tarjeta o actualizar el avatar/perfil de un usuario' });
-      } if (error.status === 404) {
-        return res.status(404).send({ message: 'No se encontraron usuarios' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .orFail()
+    .orFail(() => {
+      throw new NotFoundError('Usuario no encontrado');
+    })
     .then((user) => res.send(req.params.id, { data: user }))
     .catch((error) => {
-      if (error.name === 'SomeErrorName') {
-        return res.status(400).send({ message: 'Datos inválidos para crear un usuario/tarjeta o actualizar el avatar/perfil de un usuario' });
-      } if (error.status === 404) {
-        return res.status(404).send({ message: 'No se encontraron usuarios' });
+      let err;
+      if (error.status === 401) {
+        err = new AuthError('No autorizado');
+      } else if (error.status === 400) {
+        err = new BadRequest('Datos inválidos');
+      } else {
+        err = new ServerError('Error del servidor');
       }
-      return res.status(500).send({ message: 'Error del servidor' });
+
+      next(err);
     });
 };
