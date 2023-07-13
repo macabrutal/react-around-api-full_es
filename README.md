@@ -12,13 +12,11 @@ creación y autorización de usuarios en el servidor, donde se conecta el lado d
 
 ## Tecnologias Utilizadas
 
-**Frontend**
 - React
 - Form validation
 - Webpack
+- Babel
 - NPM
-
-**Backend**
 - Express.js
 - Node.js
 - Database
