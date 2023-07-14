@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
 const { celebrate, Joi, errors } = require('celebrate');
 
@@ -11,11 +12,16 @@ const users = require('./routes/users');
 
 const { login, createUser } = require('./controllers/users');
 
+// guardar las claves secretas
+require('dotenv').config();
+
 const { PORT = 3000 } = process.env;
 
-// require('dotenv').config();
-
 const app = express();
+
+// cors
+app.use(cors());
+app.options('*', cors()); // habilitar las solicitudes de todas las rutas
 
 // Rutas proyegidas:
 app.use(auth); // 2.autorización de auth
@@ -29,13 +35,12 @@ mongoose.connect('mongodb://127.0.0.1:27017/aroundb');
 
 app.use(requestLogger);// habilitar el logger de solicitud 1ero
 
-//ELIMINAR DESPUES
+// ELIMINAR DESPUES
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('El servidor va a caer');
   }, 0);
 });
-
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({

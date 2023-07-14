@@ -42,13 +42,13 @@ function App() {
   const history = useHistory();
 
   //proyecto 16
-  const [token, setToken] = useState('');
+  const [token, setToken] = React.useState('');
 
-  useEffect(() => {
+  React.useEffect(() => {
     function tokenCheck() {
       setToken(localStorage.getItem('token'));
       if (token) {
-        auth.getContent(token).then((res) => {
+        auth.checkToken(token).then((res) => {
           setIsLoggedIn(true);
           setEmail(res.user.email);
         });
@@ -56,6 +56,7 @@ function App() {
     }
     tokenCheck();
   }, [token, email, isLoggedIn]);
+
 
 
   React.useEffect(() => {
@@ -221,7 +222,7 @@ function App() {
     setEmail('');
     setIsLoggedIn(false);
     setCurrentUser({});
-    setToken(localStorage.removeItem("token"));
+    setToken(localStorage.removeItem("jwt"));
   }
 
 

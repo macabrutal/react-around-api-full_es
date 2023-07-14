@@ -18,6 +18,9 @@ export const register = ({ email, password }) => {
       return response.json();
     })
     .then((res) => {
+      if (res.message) {
+        return { error: true }
+      }
       return res;
     })
     .catch((err) => console.log(err));
@@ -27,8 +30,8 @@ export const authorize = ({ email, password }) => {
   return fetch(`${BASE_URL}/signin`, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      // 'Accept': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password })
   })
@@ -38,10 +41,11 @@ export const authorize = ({ email, password }) => {
         localStorage.setItem('jwt', data.token);
         return data;
       }
+
+      return { error: true }
     })
     .catch(err => console.log(err))
 };
-
 
 export const checkToken = (token) => {
   return fetch(`${BASE_URL}/users/me`, {
@@ -55,3 +59,4 @@ export const checkToken = (token) => {
     .then(res => res.json())
     .then(data => data)
 }
+
