@@ -65,7 +65,7 @@ app.use('/', (req, res) => {
   res.status(404).send({ message: 'Recurso solicitado no encontrado' });
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   res.status(500).send({ message: 'Ha ocurrido un error en el servidor' });
 });
 
@@ -74,7 +74,7 @@ app.use(errorLogger); // habilitar el logger de errores ANTES de los controlador
 // errores
 app.use(errors());// controlador de errores de celebrate
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   const { statusCode = 500, message = 'An error has ocurred on the server' } = err;
   res.status(statusCode).send({ message });
 });
