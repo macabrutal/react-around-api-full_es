@@ -17,7 +17,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "npm run build && scp -r ./build/* macarena_rodriguez_correa@maca-rodriguez.ignorelist.com:/home/macarena_rodriguez_correa/react-around-api-full_es/frontend"
+    "deploy": "npm run build && scp -r ./build/* macarena_rodriguez_correa@maca-rodriguez.ignorelist.com:/home/macarena_rodriguez_correa/react-around-api-full_es/frontend/build"
 
   },
   "eslintConfig": {
