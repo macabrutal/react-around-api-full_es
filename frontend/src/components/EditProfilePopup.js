@@ -1,7 +1,28 @@
 import React from "react";
 import PopupWithForm from "./PopupWithForm";
+import {CurrentUserContext} from '../contexts/CurrentUserContext';
+
 
 export default function EditProfilePopup(props) {
+
+  const currentUser = React.useContext(CurrentUserContext);
+
+  const [name, setName] = React.useState('');
+  const [description, setDescription] = React.useState('');
+
+  React.useEffect(() => {
+    setName('');
+    setDescription('');
+  }, [currentUser]);
+
+  const handleNameChange = (evt) => {
+    setName(evt.target.value);
+  }
+
+  const handleDescriptionChange = (evt) => {
+    setDescription(evt.target.value);
+  }
+
   return (
     <>
       <PopupWithForm
@@ -34,7 +55,8 @@ export default function EditProfilePopup(props) {
                   required
                   minLength="2"
                   maxLength="40"
-                  value={props.name} // Agregado: muestra el texto a editar en el campo
+                  value={name} //muestra el texto a editar en el campo name
+                  onChange={handleNameChange} // Manejador para actualizar el estado del nombre
                 />
                 <span className="popup__error popup__error_name">
                   {props.errors.profile.name}
@@ -51,7 +73,8 @@ export default function EditProfilePopup(props) {
                   required
                   minLength="2"
                   maxLength="200"
-                  value={props.about} // Agregado: muestra el texto a editar en el campo
+                  value={description}  // muestra el texto a editar en el campo abaut
+                  onChange={handleDescriptionChange} // Manejador para actualizar el estado de abaut
                 />
                 <span className="popup__error popup__error_about">
                   {props.errors.profile.about}
